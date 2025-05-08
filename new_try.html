@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>街景安全感评分</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      text-align: center;
+    }
+    h1 {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+    }
+    .images {
+      width: 45%;
+    }
+    .image {
+      width: 100%;
+      border: 1px solid #ddd;
+    }
+    .rating-buttons {
+      margin: 20px;
+    }
+    button {
+      font-size: 16px;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<h1>街景安全感评分</h1>
+<div class="container">
+  <div class="images">
+    <h3>左侧图片</h3>
+    <img id="image1" class="image" src="" alt="左侧街景"/>
+  </div>
+  <div class="images">
+    <h3>右侧图片</h3>
+    <img id="image2" class="image" src="" alt="右侧街景"/>
+  </div>
+</div>
+
+<div class="rating-buttons">
+  <button onclick="submitRating('left')">左边更安全</button>
+  <button onclick="submitRating('right')">右边更安全</button>
+</div>
+
+<script>
+  const totalPairs = 30;
+  const totalSamples = 40; // 假设你有 day_1 ~ day_40, night_1 ~ night_40
+
+  const dayImages = Array.from({ length: totalSamples }, (_, i) => `images/day/day_${i + 1}.png`);
+  const nightImages = Array.from({ length: totalSamples }, (_, i) => `images/night/night_${i + 1}.jpg`);
+
+  const results = [];
+  let index = 0;
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // 生成图片对：白对白、黑对黑、白对黑（同地点）
+  function generateImagePairs() {
+    const indices = shuffle([...Array(totalSamples).keys()]);
+
+    const whiteWhite = indices.slice(0, 10).map(i => ({
+      type: '白对白',
+      img1: dayImages[i],
+      img2: dayImages[(i + 1) % totalSamples]
+    }));
+
+    const blackBlack = indices.slice(10, 20).map(i => ({
+      type: '黑对黑',
+      img1: nightImages[i],
+      img2: nightImages[(i + 1) % totalSamples]
+    }));
+
+    const whiteBlack = indices.slice(20, 30).map(i => ({
+      type: '白黑同地',
+      img1: dayImages[i],
+      img2: nightImages[i]
+    }));
+
+    const allPairs = shuffle([...whiteWhite, ...blackBlack, ...whiteBlack]);
+    return allPairs;
+  }
+
+  const imagePairs = generateImagePairs();
+
+  function loadNextPair() {
+    if (index >= imagePairs.length) {
+      alert("评分完成，感谢您的参与！");
+      downloadResults();
+      return;
+    }
+
+    const pair = imagePairs[index];
+    document.getElementById("image1").src = pair.img1;
+    document.getElementById("image2").src = pair.img2;
+  }
+
+  function submitRating(choice) {
+    const pair = imagePairs[index];
+    results.push({
+      index: index + 1,
+      type: pair.type,
+      left: pair.img1,
+      right: pair.img2,
+      safer: choice,
+      timestamp: new Date().toISOString()
+    });
+    index++;
+    loadNextPair();
+  }
+
+  function downloadResults() {
+    const blob = new Blob([JSON.stringify(results, null, 2)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `results_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  window.onload = loadNextPair;
+</script>
+</body>
+</html>

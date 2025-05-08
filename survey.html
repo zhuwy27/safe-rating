@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>街景安全感对比问卷</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-6">
+  <h1 class="text-2xl font-bold mb-4">哪一张街景更有安全感？</h1>
+
+  <div id="image-container" class="flex gap-6 items-center justify-center mb-6">
+    <img id="imgA" src="https://via.placeholder.com/400x300?text=Image+A" alt="Image A" class="w-80 h-60 object-cover rounded shadow" />
+    <img id="imgB" src="https://via.placeholder.com/400x300?text=Image+B" alt="Image B" class="w-80 h-60 object-cover rounded shadow" />
+  </div>
+
+  <div class="flex gap-4 mb-6">
+    <button onclick="submitResponse('A')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">A 更安全</button>
+    <button onclick="submitResponse('equal')" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">一样安全</button>
+    <button onclick="submitResponse('B')" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">B 更安全</button>
+  </div>
+
+  <div class="mb-6 text-sm text-gray-700">
+    当前对比：<span id="counter">1</span>/<span id="total"></span>
+  </div>
+
+  <button onclick="exportResults()" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">导出结果</button>
+
+  <script>
+    const comparisons = [
+      { A: "2111.png", B: "图1.jpg" },
+      { A: 'https://via.placeholder.com/400x300?text=Night+1', B: 'https://via.placeholder.com/400x300?text=Night+2' },
+      { A: 'https://via.placeholder.com/400x300?text=Day+3', B: 'https://via.placeholder.com/400x300?text=Night+3' },
+      { A: 'https://via.placeholder.com/400x300?text=Night+4', B: 'https://via.placeholder.com/400x300?text=Night+5' },
+      { A: 'https://via.placeholder.com/400x300?text=Day+4', B: 'https://via.placeholder.com/400x300?text=Day+5' },
+      { A: 'https://via.placeholder.com/400x300?text=Night+6', B: 'https://via.placeholder.com/400x300?text=Day+6' }
+    ];
+
+    let index = 0;
+    let responses = [];
+    document.getElementById('total').innerText = comparisons.length;
+    loadComparison();
+
+    function loadComparison() {
+      const pair = comparisons[index];
+      document.getElementById('imgA').src = pair.A;
+      document.getElementById('imgB').src = pair.B;
+      document.getElementById('counter').innerText = index + 1;
+    }
+
+    function submitResponse(choice) {
+      responses.push({
+        index: index + 1,
+        A: comparisons[index].A,
+        B: comparisons[index].B,
+        choice: choice,
+        timestamp: new Date().toISOString()
+      });
+      index++;
+      if (index < comparisons.length) {
+        loadComparison();
+      } else {
+        alert("问卷完成，谢谢参与！点击下方按钮导出结果。");
+      }
+    }
+
+    function exportResults() {
+      const blob = new Blob([JSON.stringify(responses, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'responses.json';
+      a.click();
+    }
+  </script>
+</body>
+</html>
