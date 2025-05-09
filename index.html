@@ -59,7 +59,6 @@
 </div>
 
 <script>
-  const totalPairs = 30;
   const totalSamples = 40;
 
   const dayImages = Array.from({ length: totalSamples }, (_, i) => `images/day/day_${i + 1}.png`);
@@ -82,26 +81,52 @@
     const whiteWhite = indices.slice(0, 10).map(i => ({
       type: '白对白',
       img1: dayImages[i],
-      img2: dayImages[(i + 1) % totalSamples]
+      img2: dayImages[(i + 1) % totalSamples],
+      isRepeat: false
     }));
 
     const blackBlack = indices.slice(10, 20).map(i => ({
       type: '黑对黑',
       img1: nightImages[i],
-      img2: nightImages[(i + 1) % totalSamples]
+      img2: nightImages[(i + 1) % totalSamples],
+      isRepeat: false
     }));
 
     const whiteBlack = indices.slice(20, 30).map(i => ({
       type: '白黑同地',
       img1: dayImages[i],
-      img2: nightImages[i]
+      img2: nightImages[i],
+      isRepeat: false
     }));
 
-    const allPairs = shuffle([...whiteWhite, ...blackBlack, ...whiteBlack]);
+    const basePairs = [...whiteWhite, ...blackBlack, ...whiteBlack];
+    return shuffle(basePairs);
+  }
+
+  function insertRepeats(pairs, repeatCount) {
+    const repeatedPairs = [];
+    const usedIndices = new Set();
+
+    while (repeatedPairs.length < repeatCount) {
+      const i = Math.floor(Math.random() * pairs.length);
+      if (!usedIndices.has(i)) {
+        usedIndices.add(i);
+        const original = pairs[i];
+        repeatedPairs.push({ ...original, isRepeat: true });
+      }
+    }
+
+    const allPairs = [...pairs];
+
+    repeatedPairs.forEach(repeat => {
+      const insertPos = Math.floor(Math.random() * allPairs.length);
+      allPairs.splice(insertPos, 0, repeat);
+    });
+
     return allPairs;
   }
 
-  const imagePairs = generateImagePairs();
+  const imagePairs = insertRepeats(generateImagePairs(), 5); // 加入5个重复对
 
   function loadNextPair() {
     if (index >= imagePairs.length) {
@@ -123,6 +148,7 @@
       left: pair.img1,
       right: pair.img2,
       safer: choice,
+      isRepeat: pair.isRepeat,
       timestamp: new Date().toISOString()
     });
     index++;
