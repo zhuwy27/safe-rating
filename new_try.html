@@ -60,7 +60,7 @@
 
 <script>
   const totalPairs = 30;
-  const totalSamples = 40; // 假设你有 day_1 ~ day_40, night_1 ~ night_40
+  const totalSamples = 40;
 
   const dayImages = Array.from({ length: totalSamples }, (_, i) => `images/day/day_${i + 1}.png`);
   const nightImages = Array.from({ length: totalSamples }, (_, i) => `images/night/night_${i + 1}.jpg`);
@@ -76,7 +76,6 @@
     return array;
   }
 
-  // 生成图片对：白对白、黑对黑、白对黑（同地点）
   function generateImagePairs() {
     const indices = shuffle([...Array(totalSamples).keys()]);
 
